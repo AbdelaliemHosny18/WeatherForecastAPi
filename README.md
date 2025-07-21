@@ -6,13 +6,14 @@ A minimal ASP.NET Core Web API that supports user registration, login with JWT a
 
 ## 📁 Project Structure
 
-
+```
 WeatherForecastAPI/
-├── WeatherForecast.API             # Web API project
-├── WeatherForecast.Application     # Interfaces & DTOs
-├── WeatherForecast.Domain          # Domain models
-├── WeatherForecast.Infrastructure # Implementations (services, repos)
-└── WeatherForecastAPI.Tests        # Unit & integration tests
+├── WeatherForecast.API/                    # Web API project
+├── WeatherForecast.Application/            # Interfaces & DTOs
+├── WeatherForecast.Domain/                 # Domain models
+├── WeatherForecast.Infrastructure/         # Implementations (services, repos)
+└── WeatherForecastAPI.Tests/              # Unit & integration tests
+```
 
 ---
 
@@ -22,63 +23,79 @@ WeatherForecastAPI/
 ```bash
 git clone https://github.com/yourname/weather-forecast-api.git
 cd weather-forecast-api
+```
 
-2. Configure secrets:
-Add your JWT secret settings to appsettings.json:
-
-
-"Jwt": {
-  "Key": "YourSuperSecretKeyThatIsAtLeast32Chars",
-  "Issuer": "YourIssuer",
-  "Audience": "YourAudience",
-  "DurationInMinutes": 60
+### 2. Configure secrets:
+Add your JWT secret settings to `appsettings.json`:
+```json
+{
+  "Jwt": {
+    "Key": "YourSuperSecretKeyThatIsAtLeast32Chars",
+    "Issuer": "YourIssuer",
+    "Audience": "YourAudience",
+    "DurationInMinutes": 60
+  }
 }
+```
 
-3. Run the app:
-
+### 3. Run the app:
+```bash
 dotnet run --project WeatherForecast.API
+```
 
-🔐 Authentication Endpoints
+---
+
+## 🔐 Authentication Endpoints
+
 | Method | Endpoint             | Description              |
 | ------ | -------------------- | ------------------------ |
 | POST   | `/api/auth/register` | Register a new user      |
 | POST   | `/api/auth/login`    | Authenticate and get JWT |
 
-Sample Request:
+**Sample Request:**
+```json
 {
   "username": "testuser",
   "password": "yourpassword"
 }
+```
 
-🌦️ Weather Endpoint
+---
+
+## 🌦️ Weather Endpoint
+
 | Method | Endpoint               | Description                 | Auth Required |
 | ------ | ---------------------- | --------------------------- | ------------- |
 | GET    | `/weather?city=London` | Get weather info for a city | ✅ Yes         |
 
-
 Uses mocked weather service and caches results per city using IMemoryCache.
 
-🧪 Testing
+---
+
+## 🧪 Testing
+
 Run tests using:
-
+```bash
 dotnet test
+```
 
+**Covers:**
+- ✅ User registration
+- ✅ Login
+- ✅ Weather forecast service
 
-Covers:
+---
 
-✅ User registration
-✅ Login
-✅ Weather forecast service
+## 🛠 Technologies Used
 
-🛠 Technologies Used
 - ASP.NET Core 8
 - JWT Authentication
 - In-memory User Repository
 - In-memory Cache (IMemoryCache)
 - Moq + xUnit + FluentAssertions for testing
 
-📬 Contact
+---
+
+## 📬 Contact
+
 For feedback or issues: abdelaliemhosny18@gmail.com
-
-
-
