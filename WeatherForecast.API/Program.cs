@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WeatherForecast.API.Extensions;
+using WeatherForecast.API.Middlewares;
 using WeatherForecast.Application.Interfaces;
 using WeatherForecast.Application.Models;
 using WeatherForecast.Domain.Interfaces;
@@ -25,6 +26,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication(); 
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapControllers();
 

@@ -12,6 +12,11 @@ using WeatherForecast.Application.DTOs.Auth;
 using WeatherForecast.Application.Interfaces;
 using WeatherForecast.Domain.Entities;
 using WeatherForecast.Domain.Interfaces;
+using WeatherForecast.Domain.Exceptions;
+using Org.BouncyCastle.Crypto.Generators;
+using WeatherForecast.Infrastructure.Helpers;
+
+
 
 namespace WeatherForecast.Infrastructure.Services
 {
@@ -30,27 +35,37 @@ namespace WeatherForecast.Infrastructure.Services
         {
             var existing = await _userRepo.GetByUsernameAsync(request.Username);
             if (existing is not null)
-                throw new Exception("User already exists");
+                throw new UserAlreadyExistsException(request.Username);
+
+            var hashedPassword = PasswordHasher.Hash(request.Password);
 
             var user = new User
             {
                 Username = request.Username,
-                Password = request.Password 
+                Password = hashedPassword
             };
 
             await _userRepo.AddAsync(user);
-            return new AuthResponse { Token = GenerateJwtToken(user) ,Username= request.Username };
+
+            return new AuthResponse
+            {
+                Token = GenerateJwtToken(user),
+                Username = request.Username
+            };
         }
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
             var user = await _userRepo.GetByUsernameAsync(request.Username);
-            if (user == null || user.Password != request.Password)
-                throw new Exception("Invalid credentials");
+            if(user == null || !PasswordHasher.Verify(request.Password, user.Password))
+                     throw new InvalidCredentialsException();
 
-            return new AuthResponse { Token = GenerateJwtToken(user) };
+            return new AuthResponse
+            {
+                Token = GenerateJwtToken(user),
+                Username = user.Username
+            };
         }
-
         private string GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
