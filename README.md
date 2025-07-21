@@ -60,7 +60,6 @@ dotnet run --project WeatherForecast.API
 }
 ```
 
----
 
 ## 🌦️ Weather Endpoint
 
@@ -92,6 +91,8 @@ dotnet test
 - JWT Authentication
 - In-memory User Repository
 - In-memory Cache (IMemoryCache)
+- Custom exception classes
+- Manual password hashing using SHA256
 - Moq + xUnit + FluentAssertions for testing
 
 ---
