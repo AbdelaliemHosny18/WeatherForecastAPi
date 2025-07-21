@@ -1,16 +1,13 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WeatherForecast.Application.DTOs;
+using WeatherForecast.Application.DTOs.Auth;
 using WeatherForecast.Application.Interfaces;
+using WeatherForecast.Domain.Exceptions;
 using WeatherForecast.Domain.Interfaces;
 using WeatherForecast.Infrastructure.Repositories;
 using WeatherForecast.Infrastructure.Services;
+using FluentAssertions;
 
 namespace WeatherForecastAPI.Tests.Auth
 {
@@ -25,8 +22,6 @@ namespace WeatherForecastAPI.Tests.Auth
             _userRepository = new InMemoryUserRepository();
 
             _mockConfig = new Mock<IConfiguration>();
-
-            // Setup the JWT section in configuration
             _mockConfig.Setup(c => c["Jwt:Key"]).Returns("YourSuperLongTestKeyThatIsAtLeast32Chars");
             _mockConfig.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
             _mockConfig.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
@@ -52,20 +47,73 @@ namespace WeatherForecastAPI.Tests.Auth
         }
 
         [Fact]
-        public async Task LoginAsync_ShouldReturnToken_ForValidUser()
+        public async Task RegisterAsync_ShouldThrowException_WhenUserAlreadyExists()
         {
-            // Arrange
-            var request = new RegisterRequest { Username = "john", Password = "123" };
+            var request = new RegisterRequest { Username = "duplicate", Password = "pass" };
             await _authService.RegisterAsync(request);
 
-            var login = new LoginRequest { Username = "john", Password = "123" };
+            var action = async () => await _authService.RegisterAsync(request);
 
-            // Act
+            await action.Should().ThrowAsync<UserAlreadyExistsException>()
+                .WithMessage("*duplicate*");
+        }
+
+        [Fact]
+        public async Task LoginAsync_ShouldReturnToken_ForValidUser()
+        {
+            var register = new RegisterRequest { Username = "john", Password = "123" };
+            await _authService.RegisterAsync(register);
+
+            var login = new LoginRequest { Username = "john", Password = "123" };
             var result = await _authService.LoginAsync(login);
 
-            // Assert
             result.Should().NotBeNull();
             result.Token.Should().NotBeNullOrEmpty();
         }
+
+        [Fact]
+        public async Task LoginAsync_ShouldThrowException_WhenPasswordIsWrong()
+        {
+            var register = new RegisterRequest { Username = "sara", Password = "mypassword" };
+            await _authService.RegisterAsync(register);
+
+            var login = new LoginRequest { Username = "sara", Password = "wrongpass" };
+            var action = async () => await _authService.LoginAsync(login);
+
+            await action.Should().ThrowAsync<InvalidCredentialsException>();
+        }
+
+        [Fact]
+        public async Task LoginAsync_ShouldThrowException_WhenUserNotFound()
+        {
+            var login = new LoginRequest { Username = "ghost", Password = "none" };
+            var action = async () => await _authService.LoginAsync(login);
+
+            await action.Should().ThrowAsync<InvalidCredentialsException>();
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ShouldHashPassword_NotStorePlainText()
+        {
+            var request = new RegisterRequest { Username = "secureuser", Password = "plainpass" };
+            await _authService.RegisterAsync(request);
+
+            var user = await _userRepository.GetByUsernameAsync("secureuser");
+
+            user.Password.Should().NotBe("plainpass");
+            user.Password.Length.Should().BeGreaterThan(10); // SHA256 => 64 hex chars
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ShouldBeCaseSensitive()
+        {
+            await _authService.RegisterAsync(new RegisterRequest { Username = "CaseUser", Password = "123" });
+
+            var login = new LoginRequest { Username = "caseuser", Password = "123" };
+            var action = async () => await _authService.LoginAsync(login);
+
+            await action.Should().ThrowAsync<InvalidCredentialsException>();
+        }
+
     }
 }
