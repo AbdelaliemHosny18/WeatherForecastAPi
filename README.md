@@ -6,13 +6,13 @@ A minimal ASP.NET Core Web API that supports user registration, login with JWT a
 
 ## 📁 Project Structure
 
-WeatherForecastAPI/
-├── WeatherForecast.API // Web API project
-├── WeatherForecast.Application // Interfaces & DTOs
-├── WeatherForecast.Domain // Domain models
-├── WeatherForecast.Infrastructure // Implementations (services, repos)
-└── WeatherForecastAPI.Tests // Unit & integration tests
 
+WeatherForecastAPI/
+├── WeatherForecast.API             # Web API project
+├── WeatherForecast.Application     # Interfaces & DTOs
+├── WeatherForecast.Domain          # Domain models
+├── WeatherForecast.Infrastructure # Implementations (services, repos)
+└── WeatherForecastAPI.Tests        # Unit & integration tests
 
 ---
 
